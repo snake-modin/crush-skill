@@ -2,7 +2,7 @@
 
 > *Do they really like me?*  
 
-*People say a confession is meant to be a song of triumph, never the trumpet before the charge. But not everyone is blessed with the certainty of being loved. So maybe, before anything is said that cannot be taken back, the kindest thing we can give our hearts is a **rehearsal***
+*A confession is meant to be a song of triumph, never the trumpet before the charge. But not everyone is blessed with the certainty of being loved. So maybe, before anything is said that cannot be taken back, the kindest thing we can give our hearts is a **rehearsal***
 
 **Turn your crush into a conversational AI Skill for practice, reflection, and calibration.**
 
