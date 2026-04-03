@@ -1,4 +1,8 @@
-# 生成的前任 Skill（隐私保护，不上传）
+﻿# 生成的 crush Skill（隐私保护，不上传）
+crushes/
+!crushes/example_xiaoming/
+
+# 兼容旧目录
 exes/
 !exes/example_xiaoming/
 

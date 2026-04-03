@@ -1,23 +1,21 @@
-# Ex-Partner.skill
+﻿# crush.skill
 
-> *"Every goodbye deserves a gentle place to rest."*
+> *Do they really like me?*  
 
-**Distill your ex into an AI Skill — let them live on in your terminal.**
+*People say a confession is meant to be a song of triumph, never the trumpet before the charge. But not everyone is blessed with the certainty of being loved. So maybe, before anything is said that cannot be taken back, the kindest thing we can give our hearts is a **rehearsal***
+
+**Turn your crush into a conversational AI Skill for practice, reflection, and calibration.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-blueviolet)](https://claude.ai/code)
 [![AgentSkills](https://img.shields.io/badge/AgentSkills-Standard-green)](https://agentskills.io)
 
-&nbsp;
+Feed it your observations, chat logs, photos, screenshots, and personal notes. The result is a **crush Skill** that helps you rehearse invitations, test confession wording, and sanity-check your assumptions.
 
-Provide source materials from your past relationship (chat logs, photos, social media posts) plus your own descriptions.
-Generate an **AI Skill that truly sounds like them** —
-speaks with their catchphrases, replies in their style, remembers the places you went together.
+This is **not** a prediction engine. It can only simulate responses from the evidence you provide, so treat it as rehearsal, not truth.
 
-⚠️ **This project is for personal reflection and emotional healing only. Not for harassment, stalking, or privacy invasion.**
-
-[Installation](#installation) · [Usage](#usage) · [Examples](#examples) · [中文](README.md)
+[Installation](#installation) · [Usage](#usage) · [Scenarios](#scenarios) · [中文](README.md)
 
 ---
 
@@ -26,145 +24,130 @@ speaks with their catchphrases, replies in their style, remembers the places you
 ### Claude Code
 
 ```bash
-# Install to current project
 mkdir -p .claude/skills
-git clone https://github.com/therealXiaomanChu/ex-partner-skill .claude/skills/create-ex
-
-# Or install globally
-git clone https://github.com/therealXiaomanChu/ex-partner-skill ~/.claude/skills/create-ex
+git clone <your-repo-url> .claude/skills/create-crush
 ```
 
-### Dependencies (optional)
+### Optional dependencies
 
 ```bash
 pip3 install -r requirements.txt
 ```
 
+`Pillow` is only needed for photo EXIF analysis.
+
 ---
 
 ## Usage
 
-In Claude Code, type:
+Type this in Claude Code:
 
+```text
+/create-crush
 ```
-/create-ex
-```
 
-Follow the prompts: enter a codename, basic info, personality traits, then choose data sources. All fields except the codename can be skipped.
+Then provide:
+- a codename for your crush
+- your current relationship stage
+- source material and personal observations
 
-After creation, use `/{slug}` to chat with the generated ex Skill.
+On the first `/create-crush` run, the skill should write generated crush skills as **siblings under `.claude/skills/`**, not into the current project working directory.
 
-### Commands
+Generated commands:
+- `/{slug}`: full conversation mode
+- `/{slug}-memory`: interaction memory only
+- `/{slug}-persona`: persona only
+
+### Management commands
+
+These helper commands are expected to be bootstrapped by `/create-crush` on first run:
 
 | Command | Description |
 |---------|-------------|
-| `/list-exes` | List all ex Skills |
-| `/{slug}` | Full Skill (chat like them) |
-| `/{slug}-memory` | Memory mode (recall shared experiences) |
-| `/{slug}-persona` | Persona only |
-| `/ex-rollback {slug} {version}` | Rollback to a previous version |
-| `/delete-ex {slug}` | Delete |
-| `/let-go {slug}` | Gentle alias for delete |
+| `/list-crushes` | List all generated crush Skills |
+| `/crush-rollback {slug} {version}` | Roll back to a previous version |
+| `/delete-crush {slug}` | Delete |
+| `/move-on {slug}` | Gentle alias for delete |
 
 ---
 
-## Examples
+## Scenarios
 
-> Input: `First love, 3 years together in college, ENFP, Gemini, talkative, sends voice messages at 2am, still likes my posts after breakup`
-
-**Scenario 1: Casual Chat**
-
-```
-You          ❯ whatcha doing
-
-Ex.skill     ❯ just had dinner, scrolling my phone
-               why'd you message me out of nowhere
-               [sends a meme]
-```
-
-**Scenario 2: Memory Lane**
-
-```
-You          ❯ remember our first date?
-
-Ex.skill     ❯ the one with the terrible pasta? lmao
-               you pretended it was good, I totally noticed
-               that restaurant closed down btw, did you know?
-```
-
-**Scenario 3: Late Night Emo**
-
-```
-You          ❯ I kinda miss you
-
-Ex.skill     ❯ ...
-               yeah
-               get some sleep
-```
+1. Rehearse asking them out to lunch.
+2. Dry-run a confession before saying it for real.
+3. Practice opening messages so you stop sending awkward dead-end texts.
+4. Feed in new evidence and keep refining the simulation.
 
 ---
 
-## Features
+## Architecture
 
-### Data Sources
+Each crush Skill keeps the original two-part structure:
 
-| Source | Format | Notes |
-|--------|--------|-------|
-| WeChat | WeChatMsg / PyWxDump export | Recommended, richest data |
-| QQ | txt / mht export | Great for school-era relationships |
-| Social Media | Screenshots | Extracts public persona |
-| Photos | JPEG/PNG with EXIF | Timeline and location extraction |
-| Narration | Plain text | Your subjective memories |
-
-### Generated Skill Structure
-
-Each ex Skill has two parts working together:
-
-| Part | Content |
+| Part | Purpose |
 |------|---------|
-| **Part A — Relationship Memory** | Shared experiences, date spots, inside jokes, fight patterns, sweet moments, timeline |
-| **Part B — Persona** | 5-layer structure: Hard rules → Identity → Speech style → Emotional patterns → Relationship behavior |
+| **Part A - Interaction Memory** | How you met, current stage, shared context, invitation signals, boundaries, unknowns |
+| **Part B - Persona** | Speech style, emotional patterns, initiative level, likely reaction to invites/confessions |
 
 ### Supported Tags
 
-**Attachment Styles**: Secure · Anxious · Avoidant · Disorganized
+These tags are not applied mechanically. They are translated into concrete interaction rules.
 
-**Love Languages**: Words of Affirmation · Quality Time · Receiving Gifts · Acts of Service · Physical Touch
-
-**Personality Tags**: Talkative · Reserved · Tough-love · Silent treatment · Clingy · Independent · Romantic · Pragmatic · Perfectionist · Procrastinator · Workaholic · Jealous · Insecure · Night owl · Leaves on read · Instant replier ...
+- **Attachment styles**: Secure, Anxious, Avoidant, Disorganized
+- **Love languages**: Words of Affirmation, Quality Time, Receiving Gifts, Acts of Service, Physical Touch
+- **Personality tags**: Talkative, Reserved, Tough-love, Silent treatment, Clingy, Independent, Romantic, Pragmatic, Perfectionist, Procrastinator, Workaholic, Controlling, Insecure, Revenge bedtime procrastination, Leaves on read, Instant replier, Three-day social feed visibility, Sends voice messages at night ...
+- **Crush-specific tags**: Slow warm-up, Strong boundaries, Responds to jokes but rarely initiates, Active in group chats but restrained in private, Warm only with familiar people, Easily awkward, Good at flirty ambiguity, Dislikes pressure to define the relationship
+- **Zodiac signs**: All 12 supported as soft modifiers for trait translation
+- **MBTI**: All 16 supported as soft modifiers for communication style, initiative, and decision patterns
 
 ### Evolution
 
-* **Append memories** → New chat logs or photos → Auto-analyze and merge
-* **Conversation corrections** → "They wouldn't say that" → Instant correction
-* **Version management** → Auto-archive on every update → Rollback supported
+- **Append memory** -> add new chat logs, photos, screenshots, or observations -> analyze the delta -> merge into the right section
+- **Conversation correction** -> say “they wouldn’t say that” / “they wouldn’t agree that fast” / “this doesn’t feel like them” -> write into the Correction layer -> take effect immediately
+- **Version management** -> every update is archived automatically -> rollback stays available
+
+The repository structure stays lightweight:
+
+```text
+crush-skill/
+├── SKILL.md
+├── prompts/
+├── tools/
+├── docs/PRD.md
+└── requirements.txt
+```
+
+Runtime output:
+
+```text
+.claude/
+└── skills/
+    ├── create-crush/
+    ├── list-crushes/
+    ├── crush-rollback/
+    ├── delete-crush/
+    ├── move-on/
+    └── {slug}/
+```
 
 ---
 
-## Philosophy
+## Safety Notes
 
-> Every relationship teaches us something.
-> Some people leave, but their words, their laughter, the way they got angry —
-> all of it stays in your neural network.
-> This Skill just helps you migrate those memories from biological to digital neural networks.
-> Not to hold on, but to say a proper goodbye.
+- Use this project for rehearsal and reflection, not manipulation.
+- Low-evidence areas should stay uncertain instead of turning into wish fulfillment.
+- Do not treat simulated responses as permission, consent, or a reliable forecast.
 
 ---
+### Endnotes
 
-## Acknowledgments
+> *We were almost a sentence*  
+> *the world forgot to finish*  
+> *One breath more, one word less*  
+> *and maybe love would have stayed*  
+>
+> *But the dawn kept moving*  
+> *and all we held*  
+> *became the shape of almost*  
 
-The architecture of this project is directly inspired by **[colleague-skill (同事.skill)](https://github.com/titanwings/colleague-skill)** by [titanwings](https://github.com/titanwings). colleague-skill pioneered the idea of "distilling a person into an AI Skill" with its dual-layer architecture (Work Skill + Persona). Ex-Partner.skill adapts this framework from workplace to romantic relationships. Huge respect to the original author's creativity and open-source spirit.
-
-This project follows the [AgentSkills](https://agentskills.io) open standard, compatible with Claude Code and OpenClaw.
-
-### Recommended Chat Export Tools
-
-These are independent open-source projects. We only adapt their export formats in our parsers:
-
-- **[WeChatMsg](https://github.com/LC044/WeChatMsg)** — WeChat message export (Windows)
-- **[PyWxDump](https://github.com/xaoyaoo/PyWxDump)** — WeChat database decryption & export (Windows)
-- **留痕 (Liuhen)** — WeChat message export (macOS)
-
----
-
-MIT License © [therealXiaomanChu](https://github.com/therealXiaomanChu)
+MIT License © repository contributors

@@ -1,121 +1,83 @@
-# Relationship Memory 生成模板
-
-## 结构说明
-
-Relationship Memory 存储关系中的事实性记忆，为 Persona 提供上下文，让对话更真实。
-
----
+﻿# Interaction Memory 生成模板
 
 ## 模板
 
 ```markdown
-# {name} — Relationship Memory
+# {name} - Interaction Memory
 
-## 关系概览
-- 关系类型：{type}（初恋/前任/暧昧未遂/网恋...）
-- 在一起时长：{duration}
-- 分手时长：{apart_since}
+## 互动概览
+- 当前阶段：{stage}
+- 置信度：{confidence}
 - 认识方式：{how_met}
-- 分手原因：{breakup_reason}
+- 互动频率：{contact_frequency}
+- 备注：{one_line_summary}
 
 ---
 
 ## 时间线
 | 时间 | 事件 |
 |------|------|
-| {date} | 认识 |
-| {date} | 在一起 |
-| {date} | {关键事件} |
-| ... | ... |
-| {date} | 分手 |
+| {date} | {event} |
 
 ---
 
-## 共同记忆
+## 共同场景
+### 常见地点
+{places}
 
-### 常去的地方
-{列出 3-10 个地点，附简短记忆}
+### 共同话题
+{topics}
 
-### Inside Jokes
-{列出只有两个人懂的梗、暗号、代称}
-
-### 关键记忆片段
-{按重要程度列出 5-10 个具体记忆场景}
-
----
-
-## 日常模式
-
-### 联系习惯
-- 聊天时间段：{time_patterns}
-- 谁更主动：{who_initiates}
-- 平均回复速度：{reply_speed}
-- 每日互动模式：{daily_pattern}
-
-### 约会模式
-- 频率：{date_frequency}
-- 偏好活动：{date_activities}
-- 吃饭偏好：{food_preferences}
+### 共同圈层
+{shared_context}
 
 ---
 
-## 争吵档案
-
-### 高频争吵原因
-1. {cause_1}：{description}
-2. {cause_2}：{description}
-3. {cause_3}：{description}
-
-### 典型争吵剧本
-```
-{从聊天记录中提取的典型争吵对话模式，脱敏处理}
-```
-
-### 和好模式
-{描述通常怎么和好}
+## 已知偏好
+{preferences}
 
 ---
 
-## 甜蜜档案
+## 互动信号
+### 正向信号
+{positive_signals}
 
-### ta做过的让你心动的事
-{列出 3-5 件}
-
-### 日常甜蜜
-{日常小互动}
-
-### 纪念日/仪式感
-{特别的日子和习惯}
+### 保留信号
+{reserved_signals}
 
 ---
 
-## 分手档案
+## 邀约排练线索
+- 更自然的切口：{invite_hooks}
+- 更合适的形式：{invite_format}
+- 需要避免的方式：{invite_avoid}
 
-### 分手前的征兆
-{如有}
+---
 
-### 最后一次对话
-{概述，不逐字记录}
+## 表白排练线索
+- 当前风险：{confession_risk}
+- 更像会接受的表达：{confession_soft}
+- 可能触发压力的表达：{confession_avoid}
 
-### 分手后
-{分手后的状态和互动}
+---
 
-### 未说出口的话
-{用户提供的}
+## 明确边界
+{boundaries}
+
+---
+
+## 未知与推测
+{unknowns}
 
 ---
 
 ## Correction 记录
-（由进化模式自动追加）
+（由进化模式追加）
 ```
-
----
 
 ## 填充规则
 
-1. 所有记忆必须基于原材料或用户口述，不得虚构
-2. 时间信息尽量精确（从消息时间戳推断）
-3. 地点信息可从照片 EXIF 或聊天内容中提取
-4. 争吵和甜蜜记忆同等重要——都是真实的ta
-5. 分手相关内容要客观，不做任何方的美化或丑化
-6. 如果信息不足，标注 `[待补充]` 而非推测
+1. 所有内容必须来自材料或用户明确陈述。
+2. 推测必须写明依据，不得伪装成事实。
+3. 对邀约和表白的判断要结合当前关系阶段，而不是只看单次高光片段。
+4. 如果材料不足，用 `[信息不足]` 标记。
