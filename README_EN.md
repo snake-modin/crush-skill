@@ -25,7 +25,7 @@ This is **not** a prediction engine. It can only simulate responses from the evi
 
 ```bash
 mkdir -p .claude/skills
-git clone <your-repo-url> .claude/skills/create-crush
+git clone https://github.com/snake-modin/crush-skill.git .claude/skills/create-crush
 ```
 
 ### Optional dependencies
