@@ -31,7 +31,7 @@ allowed-tools: Read, Write, Edit, Bash
 
 当用户说 `/list-crushes` 时，列出所有已生成的 crush Skill。
 
-在首次运行时，先 bootstrap 辅助命令 skills：`list-crushes`、`crush-rollback`、`delete-crush`、`move-on`。
+在首次运行时，如果同级目录里还没有辅助命令 skills，就直接用 `Write` / `Edit` 创建：`list-crushes`、`crush-rollback`、`delete-crush`、`move-on`。这个 bootstrap 过程不能依赖 Python。
 
 ---
 
@@ -63,17 +63,19 @@ allowed-tools: Read, Write, Edit, Bash
 | 任务 | 使用方式 |
 |------|----------|
 | 读取 Markdown / 文本 | `Read` |
-| 解析微信导出 | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/wechat_parser.py` |
-| 解析 QQ 导出 | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/qq_parser.py` |
-| 扫描社交媒体目录 | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/social_parser.py` |
-| 分析照片 EXIF | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/photo_analyzer.py` |
+| 解析微信导出 | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/wechat_parser.py`（可选增强；无 Python 时改为让用户粘贴文本或直接读取截图） |
+| 解析 QQ 导出 | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/qq_parser.py`（可选增强） |
+| 扫描社交媒体目录 | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/social_parser.py`（可选增强） |
+| 分析照片 EXIF | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/photo_analyzer.py`（可选增强） |
 | 写入和更新文件 | `Write` / `Edit` |
-| 版本归档与回滚 | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/version_manager.py` |
-| 列出已有 Skill | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/skill_writer.py --action list` |
-| bootstrap 辅助命令 | `Bash -> python3 ${CLAUDE_SKILL_DIR}/tools/skill_writer.py --action bootstrap --source-skill-dir ${CLAUDE_SKILL_DIR}` |
+| 版本归档与回滚 | `Bash` + 原生 PowerShell 文件操作 |
+| 列出已有 Skill | `Bash` + 原生 PowerShell 目录扫描 |
+| bootstrap 辅助命令 | `Write` / `Edit` 直接写出辅助 skills |
 
 **安装态基础目录**：所有生成物应写入 `${CLAUDE_SKILL_DIR}/../{slug}/`，也就是 `create-crush` 的同级 skill 目录。
 **本地开发回退目录**：如果不是安装态，再回退到仓库内 `crushes/{slug}/`。
+
+如果检测到本机没有 `python` / `python3`，不要阻塞主流程；继续创建 skill，并把解析步骤降级为手动整理模式。
 
 ---
 
@@ -139,6 +141,17 @@ allowed-tools: Read, Write, Edit, Bash
 
 也就是说，生成结果本身就是一个新的可发现 skill，而不是只存在于当前项目目录里的数据文件夹。
 
+### Step 5.5：首次运行时 bootstrap 辅助命令
+
+如果 `${CLAUDE_SKILL_DIR}/../list-crushes/`、`${CLAUDE_SKILL_DIR}/../crush-rollback/`、`${CLAUDE_SKILL_DIR}/../delete-crush/`、`${CLAUDE_SKILL_DIR}/../move-on/` 不存在，就直接创建这些目录并写入对应 `SKILL.md`。
+
+这些辅助 skills 必须满足：
+
+1. 使用 `Bash` 工具执行 **PowerShell 原生命令**
+2. 不能调用 Python
+3. 以 `${CLAUDE_SKILL_DIR}/..` 作为 skills 根目录
+4. 对删除和回滚操作做基本参数校验
+
 ---
 
 ## 生成后的运行规则
@@ -182,19 +195,55 @@ allowed-tools: Read, Write, Edit, Bash
 `/list-crushes`
 
 ```bash
-python3 ${CLAUDE_SKILL_DIR}/tools/skill_writer.py --action list --base-dir ${CLAUDE_SKILL_DIR}/..
+$skillsRoot = (Resolve-Path (Join-Path $env:CLAUDE_SKILL_DIR '..')).Path
+$skills = Get-ChildItem -LiteralPath $skillsRoot -Directory | Where-Object {
+  Test-Path (Join-Path $_.FullName 'meta.json')
+}
+if (-not $skills) { Write-Output '还没有创建任何 crush Skill。'; exit 0 }
+foreach ($skill in $skills) {
+  $meta = Get-Content (Join-Path $skill.FullName 'meta.json') -Raw | ConvertFrom-Json
+  Write-Output ("/{0} - {1}" -f $skill.Name, $meta.name)
+  if ($meta.profile.stage) { Write-Output ("  {0}" -f $meta.profile.stage) }
+  Write-Output ("  版本 {0} · 更新于 {1}" -f $meta.version, $meta.updated_at)
+  Write-Output ''
+}
 ```
 
 `/crush-rollback {slug} {version}`
 
 ```bash
-python3 ${CLAUDE_SKILL_DIR}/tools/version_manager.py --action rollback --slug {slug} --version {version} --base-dir ${CLAUDE_SKILL_DIR}/..
+$skillsRoot = (Resolve-Path (Join-Path $env:CLAUDE_SKILL_DIR '..')).Path
+$skillDir = Join-Path $skillsRoot '{slug}'
+$versionsDir = Join-Path $skillDir 'versions'
+$target = Get-ChildItem -LiteralPath $versionsDir -Directory | Where-Object {
+  $_.Name -eq '{version}' -or $_.Name -like '{version}*'
+} | Sort-Object Name -Descending | Select-Object -First 1
+if (-not $target) { throw '找不到目标版本。' }
+$backupDir = Join-Path $versionsDir ('pre_rollback_' + (Get-Date -Format 'yyyyMMdd_HHmmss'))
+New-Item -ItemType Directory -Path $backupDir | Out-Null
+'memory.md','persona.md','SKILL.md','meta.json' | ForEach-Object {
+  $src = Join-Path $skillDir $_
+  if (Test-Path $src) { Copy-Item -LiteralPath $src -Destination (Join-Path $backupDir $_) -Force }
+}
+'memory.md','persona.md','SKILL.md','meta.json' | ForEach-Object {
+  $src = Join-Path $target.FullName $_
+  if (Test-Path $src) { Copy-Item -LiteralPath $src -Destination (Join-Path $skillDir $_) -Force }
+}
 ```
 
 `/delete-crush {slug}`
 
 ```bash
-rm -rf ${CLAUDE_SKILL_DIR}/../{slug}
+$skillsRoot = (Resolve-Path (Join-Path $env:CLAUDE_SKILL_DIR '..')).Path
+$protected = @('create-crush','list-crushes','crush-rollback','delete-crush','move-on')
+if ($protected -contains '{slug}') { throw '不能删除受保护的 skill。' }
+foreach ($name in @('{slug}','{slug}-memory','{slug}-persona')) {
+  $path = [System.IO.Path]::GetFullPath((Join-Path $skillsRoot $name))
+  if (-not $path.StartsWith($skillsRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw '非法 slug。'
+  }
+  if (Test-Path $path) { Remove-Item -LiteralPath $path -Recurse -Force }
+}
 ```
 
 `/move-on {slug}`

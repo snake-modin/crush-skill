@@ -34,7 +34,15 @@ git clone https://github.com/snake-modin/crush-skill.git .claude/skills/create-c
 pip3 install -r requirements.txt
 ```
 
-`Pillow` is only needed for photo EXIF analysis.
+Python dependencies are only for enhanced parsing, such as photo EXIF extraction or batch chat-export parsing.
+The core flow and these management commands:
+- `/create-crush`
+- `/list-crushes`
+- `/crush-rollback`
+- `/delete-crush`
+- `/move-on`
+
+should still work **without Python**.
 
 ---
 
@@ -60,7 +68,7 @@ Generated commands:
 
 ### Management commands
 
-These helper commands are expected to be bootstrapped by `/create-crush` on first run:
+These helper commands are expected to be bootstrapped by `/create-crush` on first run. That bootstrap should write the helper `SKILL.md` files directly and should not depend on Python:
 
 | Command | Description |
 |---------|-------------|

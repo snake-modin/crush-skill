@@ -32,7 +32,10 @@ cd .claude/skills/create-crush
 pip3 install -r requirements.txt
 ```
 
-当前唯一可选依赖是 `Pillow`，用于分析照片的 EXIF 信息。
+这些依赖是**可选增强**，不是仓库的硬前提。
+
+- 安装了 Python + `requirements.txt`：可以使用聊天导出解析、照片 EXIF 分析等增强能力
+- 没有 Python：仍然可以创建 crush、管理已生成 skills、做邀约/表白排练，只是更依赖手动粘贴材料
 
 ---
 
@@ -87,11 +90,9 @@ A: 可以。安装态下，每个对象会生成独立的 `.claude/skills/{slug}
 A: 可以，但结果会更依赖你的主观描述。材料越少，模拟越保守。
 
 ### Q: `/list-crushes` 这些命令为什么一开始不能用？
-A: 它们不是仓库自带的顶层静态 skills，而是应由 `/create-crush` 首次运行时 bootstrap 出来的辅助 skills。若尚未生成，可先运行一次 `/create-crush`，或手动执行：
+A: 它们不是仓库自带的顶层静态 skills，而是应由 `/create-crush` 首次运行时 bootstrap 出来的辅助 skills。这个 bootstrap 过程不应该依赖 Python，而应直接写出对应的 helper skill 文件。若尚未生成，先再运行一次 `/create-crush` 即可。
 
-```bash
-python tools/skill_writer.py --action bootstrap --source-skill-dir <create-crush路径>
-```
+开发者如果本地有 Python，也仍然可以手动执行 `tools/skill_writer.py --action bootstrap` 进行调试，但这不应是正常使用的前提。
 
 ### Q: 如何删除一个 crush Skill？
 A: 使用 `/delete-crush {slug}` 或 `/move-on {slug}`。如果辅助命令尚未 bootstrap，也可以直接让 `/create-crush` 帮你删除。

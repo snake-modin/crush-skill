@@ -35,7 +35,15 @@ git clone https://github.com/snake-modin/crush-skill.git .claude/skills/create-c
 pip3 install -r requirements.txt
 ```
 
-`Pillow` 仅用于读取照片 EXIF；如果你不分析照片，可以不装。
+Python 依赖只用于增强解析能力，例如读取照片 EXIF、批量解析聊天导出。
+核心流程和这些管理命令：
+- `/create-crush`
+- `/list-crushes`
+- `/crush-rollback`
+- `/delete-crush`
+- `/move-on`
+
+都应该可以在**没有 Python**的情况下工作。
 
 ---
 
@@ -61,7 +69,7 @@ pip3 install -r requirements.txt
 
 ### 管理命令
 
-下面这些命令不是仓库里天然存在的静态文件，而是由 `/create-crush` 首次运行时 bootstrap 出来的辅助 skills：
+下面这些命令不是仓库里天然存在的静态文件，而是由 `/create-crush` 首次运行时 bootstrap 出来的辅助 skills。这个 bootstrap 过程应直接写出对应的 `SKILL.md`，不依赖 Python：
 
 | 命令 | 说明 |
 |------|------|

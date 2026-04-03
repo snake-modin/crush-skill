@@ -197,9 +197,6 @@ def bootstrap_management_skills(base_dir: str, source_skill_dir: str | None = No
     skills_root = Path(base_dir)
     skills_root.mkdir(parents=True, exist_ok=True)
 
-    repo_root = Path(source_skill_dir) if source_skill_dir else Path(__file__).resolve().parents[1]
-    source_name = repo_root.name
-
     helpers = {
         "list-crushes": f"""---
 name: list-crushes
@@ -213,7 +210,21 @@ allowed-tools: Bash
 Use Bash to run:
 
 ```bash
-python3 "${{CLAUDE_SKILL_DIR}}/../{source_name}/tools/skill_writer.py" --action list --base-dir "${{CLAUDE_SKILL_DIR}}/.." || python "${{CLAUDE_SKILL_DIR}}/../{source_name}/tools/skill_writer.py" --action list --base-dir "${{CLAUDE_SKILL_DIR}}/.."
+$skillsRoot = (Resolve-Path (Join-Path $env:CLAUDE_SKILL_DIR '..')).Path
+$skills = Get-ChildItem -LiteralPath $skillsRoot -Directory | Where-Object {{
+  Test-Path (Join-Path $_.FullName 'meta.json')
+}}
+if (-not $skills) {{
+  Write-Output '还没有创建任何 crush Skill。'
+  exit 0
+}}
+foreach ($skill in $skills) {{
+  $meta = Get-Content (Join-Path $skill.FullName 'meta.json') -Raw | ConvertFrom-Json
+  Write-Output ("/{{0}} - {{1}}" -f $skill.Name, $meta.name)
+  if ($meta.profile.stage) {{ Write-Output ("  {{0}}" -f $meta.profile.stage) }}
+  Write-Output ("  版本 {{0}} · 更新于 {{1}}" -f $meta.version, $meta.updated_at)
+  Write-Output ''
+}}
 ```
 
 Return the tool output directly.
@@ -231,7 +242,24 @@ allowed-tools: Bash
 Extract `slug` and `version` from the user input, then run:
 
 ```bash
-python3 "${{CLAUDE_SKILL_DIR}}/../{source_name}/tools/version_manager.py" --action rollback --slug "{{slug}}" --version "{{version}}" --base-dir "${{CLAUDE_SKILL_DIR}}/.." || python "${{CLAUDE_SKILL_DIR}}/../{source_name}/tools/version_manager.py" --action rollback --slug "{{slug}}" --version "{{version}}" --base-dir "${{CLAUDE_SKILL_DIR}}/.."
+$skillsRoot = (Resolve-Path (Join-Path $env:CLAUDE_SKILL_DIR '..')).Path
+$skillDir = Join-Path $skillsRoot "{{slug}}"
+$versionsDir = Join-Path $skillDir 'versions'
+if (-not (Test-Path $versionsDir)) {{ throw '该 crush 没有历史版本。' }}
+$target = Get-ChildItem -LiteralPath $versionsDir -Directory | Where-Object {{
+  $_.Name -eq "{{version}}" -or $_.Name -like "{{version}}*"
+}} | Sort-Object Name -Descending | Select-Object -First 1
+if (-not $target) {{ throw '找不到目标版本。' }}
+$backupDir = Join-Path $versionsDir ('pre_rollback_' + (Get-Date -Format 'yyyyMMdd_HHmmss'))
+New-Item -ItemType Directory -Path $backupDir | Out-Null
+'memory.md','persona.md','SKILL.md','meta.json' | ForEach-Object {{
+  $src = Join-Path $skillDir $_
+  if (Test-Path $src) {{ Copy-Item -LiteralPath $src -Destination (Join-Path $backupDir $_) -Force }}
+}}
+'memory.md','persona.md','SKILL.md','meta.json' | ForEach-Object {{
+  $src = Join-Path $target.FullName $_
+  if (Test-Path $src) {{ Copy-Item -LiteralPath $src -Destination (Join-Path $skillDir $_) -Force }}
+}}
 ```
 
 If either field is missing, ask the user for `slug` and `version`.
@@ -249,7 +277,16 @@ allowed-tools: Bash
 Extract `slug` from the user input, confirm deletion, then run:
 
 ```bash
-python3 "${{CLAUDE_SKILL_DIR}}/../{source_name}/tools/skill_writer.py" --action delete --slug "{{slug}}" --base-dir "${{CLAUDE_SKILL_DIR}}/.." || python "${{CLAUDE_SKILL_DIR}}/../{source_name}/tools/skill_writer.py" --action delete --slug "{{slug}}" --base-dir "${{CLAUDE_SKILL_DIR}}/.."
+$skillsRoot = (Resolve-Path (Join-Path $env:CLAUDE_SKILL_DIR '..')).Path
+$protected = @('create-crush','list-crushes','crush-rollback','delete-crush','move-on')
+if ($protected -contains "{{slug}}") {{ throw '不能删除受保护的 skill。' }}
+foreach ($name in @('{{slug}}','{{slug}}-memory','{{slug}}-persona')) {{
+  $path = [System.IO.Path]::GetFullPath((Join-Path $skillsRoot $name))
+  if (-not $path.StartsWith($skillsRoot, [System.StringComparison]::OrdinalIgnoreCase)) {{
+    throw '非法 slug。'
+  }}
+  if (Test-Path $path) {{ Remove-Item -LiteralPath $path -Recurse -Force }}
+}}
 ```
 """,
         "move-on": f"""---
@@ -265,7 +302,16 @@ allowed-tools: Bash
 Behave exactly like `delete-crush`, but use softer confirmation wording and run:
 
 ```bash
-python3 "${{CLAUDE_SKILL_DIR}}/../{source_name}/tools/skill_writer.py" --action delete --slug "{{slug}}" --base-dir "${{CLAUDE_SKILL_DIR}}/.." || python "${{CLAUDE_SKILL_DIR}}/../{source_name}/tools/skill_writer.py" --action delete --slug "{{slug}}" --base-dir "${{CLAUDE_SKILL_DIR}}/.."
+$skillsRoot = (Resolve-Path (Join-Path $env:CLAUDE_SKILL_DIR '..')).Path
+$protected = @('create-crush','list-crushes','crush-rollback','delete-crush','move-on')
+if ($protected -contains "{{slug}}") {{ throw '不能删除受保护的 skill。' }}
+foreach ($name in @('{{slug}}','{{slug}}-memory','{{slug}}-persona')) {{
+  $path = [System.IO.Path]::GetFullPath((Join-Path $skillsRoot $name))
+  if (-not $path.StartsWith($skillsRoot, [System.StringComparison]::OrdinalIgnoreCase)) {{
+    throw '非法 slug。'
+  }}
+  if (Test-Path $path) {{ Remove-Item -LiteralPath $path -Recurse -Force }}
+}}
 ```
 """,
     }
